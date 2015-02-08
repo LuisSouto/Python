@@ -44,7 +44,7 @@ for i in range(n):
     v_y = v*np.sin(theta)*np.sin(phi)
     v_z = v*np.cos(theta)    
     
-    bola = vs.sphere(pos=pos,radius=r,color=(0,0,1),v=[v_x,v_y,v_z])
+    bola = vs.sphere(pos=np.array(pos),radius=r,color=(0,0,1),v=np.array([v_x,v_y,v_z]))
     
     bolas.append(bola)
     
@@ -52,6 +52,57 @@ for i in range(n):
 
 # Funciones a utilizar
 
+def centro_de_masas(bola1,bola2):
+    
+    # Coordenada x
+     
+     x = (bola1.pos[0]+bola2.pos[0])/2
+     
+    # Coordenada y
+     
+     y = (bola1.pos[1]+bola2.pos[1])/2     
+     
+    # Coordenada z
+     
+     z = (bola1.pos[2]+bola2.pos[2])/2     
+     
+     return np.array([x,y,z])
+
+
+def velocidad_centro(bola1,bola2):
+    
+    # Componente x
+    
+     v_x = (bola1.v[0]+bola2.v[0])/2
+     
+    # Componente y
+    
+     v_y = (bola1.v[1]+bola2.v[1])/2  
+     
+    # Componente z
+    
+     v_z = (bola1.v[2]+bola2.v[2])/2 
+     
+     return np.array([v_x,v_y,v_z])
+    
+def choque_elastico2(bola1,bola2):
+
+  # Velocidad en el sistema del centro de masas antes del choque
+
+    v_1 = bola1.v - velocidad_centro(bola1,bola2)
+    v_2 = bola2.v - velocidad_centro(bola1,bola2)    
+
+
+  # Velocidad en el sistema del centro de masas después del choque
+
+    v_1 *= -1
+    v_2 *= -1
+    
+    bola1.v = v_1  + velocidad_centro(bola1,bola2)
+    bola2.v = v_2 + velocidad_centro(bola1,bola2)
+    
+    
+    
 def choque_elastico(bola1,bola2):
 
     
@@ -80,6 +131,7 @@ def choque_elastico(bola1,bola2):
         
         bola1.v = [v_1x,v_1y,v_1z]
         bola2.v = [v_2x,v_2y,v_2z]
+
 
 
 # Mainloop
@@ -135,7 +187,7 @@ while 1:
             distancia_centros = np.sqrt((bolas[i].x-bolas[j].x)**2 + (bolas[i].y-bolas[j].y)**2 + (bolas[i].z-bolas[j].z)**2)
           
             if distancia_centros<=(bolas[i].radius+bolas[j].radius):
-               choque_elastico(bolas[i],bolas[j])
+               choque_elastico2(bolas[i],bolas[j])
        
     # Actualizar parámetros   
     
