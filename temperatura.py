@@ -8,37 +8,49 @@ Created on Mon Nov  3 22:56:27 2014
 # -*- coding: utf-8 -*-
 
 
+
 import visual as vs
 import numpy as np
+import random as rd
+from scipy.stats import maxwell
+import constantes_fisicas as cf
+
 
 L = float(raw_input('Introduce la dimensión del cubo: '))
-r = L/50
+r = L/100
 n = int(raw_input('Introduce el número de partículas: '))
-T = float(raw_input('Introduce la temperatura del recipiente en grados Kelvin: '))
+T = float(raw_input('Introduce la temperatura del recipiente en grados Kelvin: '))*cf.K
+m = 12*cf.u
+escala = 100*np.sqrt(m/(cf.k_B*T))
 
 while T<0:
     print 'En escala Kelvin no existen temperaturas negativas.'
     T = float(raw_input('Introduce la temperatura del recipiente en grados Kelvin: '))
 
 
-v = np.sqrt(T) # Faltan constantes
 
 # Creación de los elementos a interaccionar entre sí
 
-cubo = vs.box(pos=(0,0,0),length=2*L,height=2*L,width=2*L,color=(0,1,0),opacity=0.2)
+cubo = vs.box(pos=(0,0,0),length=2*L,height=2*L,width=2*L,color=(1,1,1),opacity=0.2)
 
 bolas = []
+v = []
 
 for i in range(n):
     
     # Posición inicial
     
-    pos = (np.random.random()*L/2,np.random.random()*L/2,np.random.random()*L/2)
+    pos = (rd.uniform(-1,1)*L/2,rd.uniform(-1,1)*L/2,rd.uniform(-1,1)*L/2)
     
     # Velocidad inicial
     
-    theta = np.random.random()*2*np.pi
-    phi = np.random.random()*2*np.pi
+    cos_theta = rd.uniform(-1,1)
+    phi = rd.uniform(0,2*np.pi)
+    theta = np.arccos(cos_theta)
+    
+    f_inv_cdf = rd.uniform(0,1)
+    x = maxwell.ppf(f_inv_cdf)
+    v = x/escala
     
     v_x = v*np.sin(theta)*np.cos(phi)
     v_y = v*np.sin(theta)*np.sin(phi)
@@ -85,12 +97,13 @@ def velocidad_centro(bola1,bola2):
      
      return np.array([v_x,v_y,v_z])
     
-def choque_elastico2(bola1,bola2):
+def choque_elastico(bola1,bola2):
 
   # Velocidad en el sistema del centro de masas antes del choque
 
-    v_1 = bola1.v - velocidad_centro(bola1,bola2)
-    v_2 = bola2.v - velocidad_centro(bola1,bola2)    
+    v_c = velocidad_centro(bola1,bola2)
+    v_1 = bola1.v - v_c
+    v_2 = bola2.v - v_c
 
 
   # Velocidad en el sistema del centro de masas después del choque
@@ -98,39 +111,12 @@ def choque_elastico2(bola1,bola2):
     v_1 *= -1
     v_2 *= -1
     
-    bola1.v = v_1  + velocidad_centro(bola1,bola2)
-    bola2.v = v_2 + velocidad_centro(bola1,bola2)
+    bola1.v = v_1  + v_c
+    bola2.v = v_2 + v_c
+    
+    print 'Choque!'
     
     
-    
-def choque_elastico(bola1,bola2):
-
-    
-        # Parámetros dejados al azar
-    
-        phi_1 = np.random.random()*2*np.pi
-        theta_1 = np.random.random()*2*np.pi
-        
-        phi_2 = np.random.random()*2*np.pi
-        theta_2 = np.random.random()*2*np.pi
-        
-        # Velocidades de las bolas antes del choque
-        
-        v_1 = np.sqrt(bola1.v[0]**2+bola1.v[1]**2+bola1.v[2]**2)
-        v_2 = np.sqrt(bola2.v[0]**2+bola2.v[1]**2+bola2.v[2]**2)
-        
-        # Dirección de las velocidades después del choque        
-        
-        v_1x = v_1*np.sin(theta_1)*np.cos(phi_1)   
-        v_1y = v_1*np.sin(theta_1)*np.sin(phi_1)
-        v_1z = v_1*np.cos(theta_1)
-        
-        v_2x = v_2*np.sin(theta_2)*np.cos(phi_2)   
-        v_2y = v_2*np.sin(theta_2)*np.sin(phi_2)
-        v_2z = v_2*np.cos(theta_2)
-        
-        bola1.v = [v_1x,v_1y,v_1z]
-        bola2.v = [v_2x,v_2y,v_2z]
 
 
 
@@ -167,13 +153,13 @@ while 1:
               bolas[i].z = -L+r
                
           
-      if abs(bolas[i].x)+r==L:
+      if abs(bolas[i].x)+r>=L:
           bolas[i].v[0]*=-1
     
-      if abs(bolas[i].y)+r==L:
+      if abs(bolas[i].y)+r>=L:
           bolas[i].v[1]*=-1
           
-      if abs(bolas[i].z)+r==L:
+      if abs(bolas[i].z)+r>=L:
           bolas[i].v[2]*=-1
           
     
@@ -187,11 +173,11 @@ while 1:
             distancia_centros = np.sqrt((bolas[i].x-bolas[j].x)**2 + (bolas[i].y-bolas[j].y)**2 + (bolas[i].z-bolas[j].z)**2)
           
             if distancia_centros<=(bolas[i].radius+bolas[j].radius):
-               choque_elastico2(bolas[i],bolas[j])
+               choque_elastico(bolas[i],bolas[j])
        
     # Actualizar parámetros   
     
     for i in range(n):
-        bolas[i].pos += (bolas[i].v[0]/5,bolas[i].v[1]/5,bolas[i].v[2]/5)
+        bolas[i].pos += (bolas[i].v[0],bolas[i].v[1],bolas[i].v[2])
     
     
