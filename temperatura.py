@@ -113,11 +113,8 @@ def choque_elastico(bola1,bola2):
     
     bola1.v = v_1  + v_c
     bola2.v = v_2 + v_c
-    
-    print 'Choque!'
-    
-    
 
+    
 
 
 # Mainloop
@@ -131,27 +128,6 @@ while 1:
     # Choque entre una bola  y la pared
     
     for i in range(n):
-
-      if abs(bolas[i].x)+r>L:
-          if bolas[i].x>0:
-              bolas[i].x = L-r
-          else:
-              bolas[i].x = -L+r
-              
-
-      if abs(bolas[i].y)+r>L:
-          if bolas[i].y>0:
-              bolas[i].y = L-r
-          else:
-              bolas[i].y = -L+r
-              
-        
-      if abs(bolas[i].z)+r>L:
-          if bolas[i].z>0:
-              bolas[i].z = L-r
-          else:
-              bolas[i].z = -L+r
-               
           
       if abs(bolas[i].x)+r>=L:
           bolas[i].v[0]*=-1
@@ -178,6 +154,32 @@ while 1:
     # Actualizar parámetros   
     
     for i in range(n):
-        bolas[i].pos += (bolas[i].v[0],bolas[i].v[1],bolas[i].v[2])
+        
+        x,y,z = bolas[i].pos
+        vx,vy,vz = bolas[i].v
+        
+        if abs(x+vx)+r>L:
+            if x>0:
+                bolas[i].x = L-r
+            else:
+                bolas[i].x = r-L
+        else:
+            bolas[i].x = x+vx
+            
+        if abs(y+vy)+r>L:
+            if y>0:
+                bolas[i].y = L-r
+            else:
+                bolas[i].y = r-L
+        else:
+            bolas[i].y = y+vy
+            
+        if abs(z+vz)+r>L:
+            if z>0:
+                bolas[i].z = L-r
+            else:
+                bolas[i].z = r-L
+        else:
+            bolas[i].z = z+vz    
     
     
